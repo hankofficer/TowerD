@@ -103,6 +103,14 @@ class CmptTower(Component):
             return True
         return False
 
+    def _isValidTarget(self, target):
+        tx = target["CmptCoordinate"].x
+        ty = target["CmptCoordinate"].y
+        thp = target["CmptEnemy"].hp
+        if target.enable and self.isInRange(tx, ty) and thp > 0:
+            return True
+        return False
+
     def init(self):
         pass
 
@@ -123,19 +131,18 @@ class CmptTower(Component):
         if self.target == None:
             for obj in self.entity.scene._objList:
                 if "CmptEnemy" in obj.components:
-                    self.target = obj
-                    break
+                    tx = obj["CmptCoordinate"].x
+                    ty = obj["CmptCoordinate"].y
+                    thp = obj["CmptEnemy"].hp
+                    if self._isValidTarget(obj):
+                        self.target = obj
+                        break
 
         if self.target != None:
-            tx = self.target["CmptCoordinate"].x
-            ty = self.target["CmptCoordinate"].y
-            thp = self.target["CmptEnemy"].hp
-
-            if self.target.enable and self.isInRange(tx, ty) and thp > 0:
+            if self._isValidTarget(self.target):
                 if self._cooldownTimer < 0:
-                    thp -= self._attack
+                    self.target["CmptEnemy"].hp -= self._attack
                     self._cooldownTimer = 0
-                    self.target["CmptEnemy"].hp = thp
             else:
                 self.target = None
 
